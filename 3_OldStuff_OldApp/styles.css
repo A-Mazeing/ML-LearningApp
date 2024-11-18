@@ -1,0 +1,313 @@
+body, .stylebutton, .ergebnis_button, #Ergebnis_Text, #Exp_Ergebnis{
+    font-family: 'Open Sans Bold', sans-serif;
+    color: white;
+    text-align: center;
+}
+#Klassifizieren{
+    font-size: 1.5em;
+}
+
+#Ergebnis_Text, #Exp_Ergebnis, #dropdownMenuButton {
+    font-size: 1.4em;
+}
+
+body, html{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+/*Abstand oben*/
+#KunstInteraktivText{
+    margin-top: 15vh;
+}
+
+#startseite, #container, #loading {
+    height: 100vh;
+    width: 100%;
+    background-image: url('Pics/Background.jpg');
+    background-size: 100% 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+/* body{
+    background-image: url("Pics/Background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+} */
+
+.stylebutton{
+    width: 60%;
+    height: auto;
+    border: none;
+    background-color: black;
+    position: relative;
+    padding: 10px 30px;
+    margin: 0 15px;
+    color: #5c32c6;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.2em;
+    transition: 0.5s;
+    overflow: hidden;
+}
+.stylebutton:hover{
+    background: #5c32c6;
+    color: #000000;
+    box-shadow: 0 0 50px #5c32c6;
+    transition-delay: 0.5s;
+}
+.stylebutton:before{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid #5c32c6;
+    border-left: 2px solid #5c32c6;
+    transition: 0.5s;
+}
+.stylebutton:hover:before{
+    width: 100%;
+    height: 100%;
+}
+.stylebutton:after{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border-bottom: 2px solid #5c32c6;
+    border-right: 2px solid #5c32c6;
+    transition: 0.5s;
+}
+.stylebutton:hover:after{
+    width: 100%;
+    height: 100%;
+}
+
+
+
+#whitespace, #whitespace_oben{
+    height: 10%;
+}
+
+#KunstInteraktivText{
+
+    color: #ffffff;
+    text-align: left;
+    display: inline-block;
+    font-size: 4em;
+    
+}
+.KIText {
+    color: #ff066e;
+}
+
+#beschreibung{
+    font-size: 1em;
+    color: white;
+    display: inline-block;
+    margin-top: 5vh;
+}
+
+#container_Auswahl
+{
+    margin-top: 4vh;
+    width: 40%;
+    font-size: 0.7em;
+}
+#loading{
+    margin: 0;
+    padding: 0;
+    font-family: consolas;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    -webkit-box-reflect: below -12px linear-gradient(transparent, rgba(0,0,0,0.2));
+}
+#loading span{
+    position: relative;
+    display: inline-block;
+    letter-spacing: 0.5em;
+    font-size: 3.5em;
+    color: white;
+    text-transform: uppercase;
+    animation: animate 1s ease-in-out infinite;
+    animation-delay: calc(0.1s*var(--i));
+
+}
+@keyframes animate
+{
+    0%
+    {
+        transform: translateY(0px);
+    }
+    10%
+    {
+        transform: translateY(-10px);
+    }
+    20%
+    {
+        transform: translateY(-20px);
+    }
+    30%
+    {
+        transform: translateY(-30px);
+    }
+    40%
+    {
+        transform: translateY(-40px);
+    }
+}
+
+
+#startButton {
+    margin-top: 5vh;
+    position: relative;
+    font-size: 1.2em;
+    font-style: bold;
+}
+#startseite, #container, #loading {
+    height: calc(var(--vh, 1vh) * 100);
+}
+
+#container {
+    max-width: 100%;
+    box-sizing: border-box;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#container > * {
+    margin-bottom: 10px;
+}
+
+#webcam-container {
+    width: 350px;
+    height: 350px;
+    background-color: rgb(94, 94, 94);
+    border-radius: 20%;
+    margin: 10px auto 50px auto;
+    position: relative;
+    z-index: 9999;
+}
+
+#webcam-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
+@font-face {
+    font-family: 'Open Sans Regular';
+    src: url('Fonts/OpenSans-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Open Sans Bold';
+    src: url('Fonts/OpenSans-Bold.ttf') format('truetype');
+}
+
+#logo {
+    width: 12.5%;
+    height: auto;
+    position: relative;
+}
+
+#camSwitch {
+    background-color: transparent;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    background-color: none;
+    border: none;
+    padding: 0;
+    border-radius: 20%;
+}
+
+#camSwitchIcon {
+    width: 100%;
+    height: 100%;
+}
+
+input:focus, input:valid{
+    color:darkred;
+    border: 4px solid darkred;
+}
+input:focus + .eingabefeld_label, input:valid + .eingabefeld_label{
+    color:darkred;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 12px;
+    transform: translate(-15px, -16px) scale(0.88);
+    z-index: 1111;
+}
+
+#inputcontainer {
+    margin-top: 3vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.inputBox{
+    position: relative;
+    width: 60%; 
+    
+    
+}
+
+.inputBox input{
+    width: 100%;
+    padding: 10px;
+    border: 2px solid darkred;
+    background: black;
+    border-radius: 10px;
+    outline: none;
+    color: #fff;
+    font-size: 0.7em;
+}
+.inputBox span{
+    position: absolute;
+    left: 0;
+    padding: 10px;
+    pointer-events: none;
+    font-size: 0.7em;
+    color: white;
+    text-transform: uppercase;
+    transition:  0.4s;
+}
+.inputBox input:valid ~ span, .inputBox input:focus ~ span{
+    color: darkred;
+    transform: translateX(10px) translateY(-7px);
+    font-size: 0.45em;
+    padding: 0 10px;
+    background: black;
+    border-left: 1px solid #5c32c6;
+    border-right: 1px solid #5c32c6;
+    letter-spacing: 0.2em;
+}
+.inputBox:nth-child(1) input:valid ~ span, .inputBox:nth-child(1) input:focus ~ span{
+    background-color: darkred;
+    color: white;
+    border-radius: 2px;
+}
+
+.inputBox input:valid, .inputBox input:focus{
+    border: 1px solid #5c32c6;
+}

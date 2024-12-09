@@ -1,11 +1,12 @@
-import {useEffect, useRef, useState} from "react";
-import {GetCamDevices, LoadModel} from "./TM_Model.js";
-import BarComponent from "./BarCompnent.jsx";
+import { useEffect, useRef, useState } from "react";
+import { GetCamDevices, LoadModel } from "../assets/TM_Model.js";
+import BarComponent from "../assets/BarCompnent.jsx";
 import PropTypes from "prop-types";
-import GradientButton from "./GradientButton.jsx";
-import UploadButton from "./UploadButton.jsx";
+import GradientButton from "../assets/GradientButton.jsx";
+import UploadButton from "../assets/UploadButton.jsx";
+import SelectMode from "../assets/SelectMode.jsx";
 
-export default function KameraLoadModel({ width = 300, height = 300, model = "https://teachablemachine.withgoogle.com/models/i865Oq6Cd/" }) {
+export default function FreeTestPage({ model = "https://teachablemachine.withgoogle.com/models/i865Oq6Cd/" }) {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [photo, setPhoto] = useState(null);
@@ -15,8 +16,9 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
     const [modelInstance, setModelInstance] = useState(null);
     const [isCameraActive, setIsCameraActive] = useState(true);
     const streamRef = useRef(null);
+    const [selectedMode, setSelectedMode] = useState(1);
 
-    //Modell von TM mit URL laden:
+    // Modell von TM mit URL laden:
     useEffect(() => {
         const loadModel = async () => {
             const loadedModel = await LoadModel(model);
@@ -35,7 +37,7 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         fetchDevices();
     }, []);
 
-    async function startCam  (){
+    async function startCam() {
         if (currentDeviceId && videoRef.current) {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -49,7 +51,7 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         }
     }
 
-    async function stopCam(){
+    async function stopCam() {
         if (streamRef.current) {
             const tracks = streamRef.current.getTracks();
             tracks.forEach(track => track.stop()); // Stoppt alle Tracks des Streams
@@ -58,7 +60,7 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         }
     }
 
-    useEffect(() => {startCam();}, [currentDeviceId]);
+    useEffect(() => { startCam(); }, [currentDeviceId]);
 
     useEffect(() => {
         if (isCameraActive) {
@@ -88,6 +90,7 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         const dataUrl = canvas.toDataURL("image/png");
         setPhoto(dataUrl); // Save the captured image as the last photo
     };
+
     const toggleCam = async () => {
         if (isCameraActive) {
             captureLastFrame();
@@ -154,7 +157,6 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         input.click(); // Dialog öffnen
     };
 
-
     // Kontinuierliche Klassifikation im Hintergrund
     useEffect(() => {
         let intervalId;
@@ -176,17 +178,74 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
         };
     }, [modelInstance, isCameraActive, videoRef]);
 
+    const modie = [
+        { value: 1, label: 'Alles Anzeigen' },
+        { value: 2, label: 'Klasse und Prozente' },
+        { value: 3, label: 'Klasse' }
+    ];
+
+    const renderPredictions = () => {
+        if (selectedMode === 1) {
+            return predictions.map((prediction, index) => (
+                <BarComponent
+                    key={index}
+                    label={prediction.className}
+                    value={Math.round(prediction.probability * 100)}
+                    classIndex={index}
+                />
+            ));
+        } else if (selectedMode === 2) {
+            if (predictions.length > 0) {
+                const topPrediction = predictions.reduce((max, prediction) =>
+                    prediction.probability > max.probability ? prediction : max, predictions[0]
+                );
+                return (
+                    <BarComponent
+                        label={topPrediction.className}
+                        value={Math.round(topPrediction.probability * 100)}
+                        classIndex={0}
+                    />
+                );
+            }
+        } else if (selectedMode === 3) {
+            if (predictions.length > 0) {
+                const topPrediction = predictions.reduce((max, prediction) =>
+                    prediction.probability > max.probability ? prediction : max, predictions[0]
+                );
+                return <h3>{topPrediction.className}</h3>;
+            }
+        }
+        return null;
+    };
+
     return (
-        <div>
-            <h1>Kamera-Komponente</h1>
-            <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px'}}>
+            {/* Vorhersage und Klassifizierungsanpassung links */}
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                <SelectMode
+                    items={modie}
+                    eventFunc={(mode) => setSelectedMode(mode)} // Modus auswählen
+                    style={{fontSize: '32px'}} // Schriftgröße vergrößern
+                />
+
+                {predictions.length > 0 && (
+                    <div style={{marginTop: "20px", textAlign: "left", width: "300px"}}> {/* Text linksbündig */}
+                        <h2 style={{fontSize: '28px'}}>Klassifikationen:</h2> {/* Schriftgröße erhöhen */}
+                        {renderPredictions()}
+                    </div>
+                )}
+            </div>
+
+            {/* Kamera Canvas mit Video und Fotoaufnahme Buttons */}
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                 {isCameraActive ? (
                     <video
                         ref={videoRef}
                         autoPlay
                         style={{
-                            width: `${width}px`,
-                            height: `${height}px`,
+                            width: '700px',
+                            height: '700px',
+                            borderRadius: '15px', // Canvas abgerundet
                         }}
                     />
                 ) : (
@@ -194,41 +253,28 @@ export default function KameraLoadModel({ width = 300, height = 300, model = "ht
                         src={photo}
                         alt="Aufgenommenes Foto"
                         style={{
-                            width: `${width}px`,
-                            height: `${height}px`,
-                            objectFit: "cover",
-                            marginBottom: "10px",
+                            width: '700px',
+                            height: '700px',
+                            objectFit: 'cover',
+                            marginBottom: '10px',
+                            borderRadius: '15px', // Canvas abgerundet
                         }}
                     />
                 )}
-                <canvas ref={canvasRef} style={{display: "none"}}/>
-                <GradientButton
-                    event={toggleCam}
-                    text={isCameraActive ? "Foto aufnehmen" : "Kamera aktivieren"}
-                />
-                {devices.length > 1 && <button onClick={handleSwitchCamera}>Kamera wechseln</button>}
-                <UploadButton eventClick={handleImageUpload} text={"Bild hochladen"}></UploadButton>
-
-                {predictions.length > 0 && (
-                    <div style={{marginTop: "20px", textAlign: "center", width: "300px"}}>
-                        <h2>Vorhersagen:</h2>
-                        {predictions.map((prediction, index) => (
-                            <BarComponent
-                                key={index}
-                                label={prediction.className}
-                                value={Math.round(prediction.probability * 100)}
-                                classIndex={index}
-                            />
-                        ))}
-                    </div>
-                )}
+                <canvas ref={canvasRef} style={{display: 'none'}}/>
+                <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                    <GradientButton
+                        event={toggleCam}
+                        text={isCameraActive ? 'Foto aufnehmen' : 'Kamera aktivieren'}
+                    />
+                    <UploadButton eventClick={handleImageUpload} text={"Bild hochladen"}/>
+                </div>
             </div>
         </div>
+
     );
 }
 
-KameraLoadModel.propTypes = {
+FreeTestPage.propTypes = {
     model: PropTypes.string,
-    width: PropTypes.number,
-    height: PropTypes.number,
 };

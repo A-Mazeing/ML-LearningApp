@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import Kamera from "../assets/KameraLoadModel.jsx";
+import Kamera from "./KameraLoadModel.jsx";
 
 
 export default function FreeTestSite({modelUrl}){

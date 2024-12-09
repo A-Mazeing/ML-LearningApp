@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')).render(
             <Routes>
                 <Route path="/" element={<App />} /> {/* Hauptseite */}
                 <Route path="/select" element={<Select/>} /> {/* Selection-Seite */}
-                <Route path="/freeTestSite" element={<FreeTestSite />} /> {/* Freies Testen-Seite */}
+                <Route path="/freeTestSite" element={<FreeTestSite />} />
             </Routes>
         </Router>
     </StrictMode>

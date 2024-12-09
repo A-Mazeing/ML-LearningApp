@@ -1,14 +1,16 @@
 import PropTypes from "prop-types";
+import { useLocation } from "react-router-dom";
 import Kamera from "./KameraLoadModel.jsx";
 
-
-export default function FreeTestSite({modelUrl}){
+export default function FreeTestSite() {
+    const location = useLocation();
+    const modelUrl = location.state?.modelUrl
+    console.log(modelUrl);
     return (
-        <Kamera width={300} height={300}/>
+        <Kamera width={300} height={300} model={modelUrl} />
     );
 }
 
-
 FreeTestSite.propTypes = {
-    modelUrl: PropTypes.string
-}
+    modelUrl: PropTypes.string,
+};

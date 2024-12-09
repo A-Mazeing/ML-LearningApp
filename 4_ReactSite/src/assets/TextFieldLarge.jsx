@@ -2,9 +2,10 @@ import {TextField} from "@mui/material";
 import PropTypes from "prop-types";
 
 
-const TextFieldLarge = ({textTextfeld, style, width, height}) => {
+const TextFieldLarge = ({textTextfeld, style, width, height, onChangeFunc}) => {
     return (
         <TextField
+            onChange={onChangeFunc}
             variant="outlined"
             label={textTextfeld}
             sx={{

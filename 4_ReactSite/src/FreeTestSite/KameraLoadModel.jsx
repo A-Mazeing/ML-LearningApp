@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { GetCamDevices, LoadModel } from "../assets/TM_Model.js";
 import BarComponent from "../assets/BarCompnent.jsx";
 import PropTypes from "prop-types";
 import GradientButton from "../assets/GradientButton.jsx";
-import UploadButton from "../assets/UploadButton.jsx";
 import SelectMode from "../assets/SelectMode.jsx";
+import {Alert, AlertTitle} from "@mui/material";
+import * as tmImage from "@teachablemachine/image";
 
-export default function FreeTestPage({ model = "https://teachablemachine.withgoogle.com/models/i865Oq6Cd/" }) {
+export default function FreeTestPage({ model = "" }) {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [photo, setPhoto] = useState(null);
@@ -17,6 +17,51 @@ export default function FreeTestPage({ model = "https://teachablemachine.withgoo
     const [isCameraActive, setIsCameraActive] = useState(true);
     const streamRef = useRef(null);
     const [selectedMode, setSelectedMode] = useState(1);
+    const [errorMessage, setErrorMessage] = useState(null);
+
+    async function LoadModel(modelUrl) {
+        if (modelUrl) {
+            try {
+                // Model Scripts laden
+                const modelURL = modelUrl + "model.json";
+                const metadataURL = modelUrl + "metadata.json";
+                return await tmImage.load(modelURL, metadataURL);
+            } catch (error) {
+                ThrowError(`Fehler beim Laden des Modells: ${error.message}`);
+            }
+            return null;
+        }
+    }
+
+
+//Funktion für Kamera-Devices -> returned alle KameraDevices
+    async function GetCamDevices() {
+        try {
+            // Get all Devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+
+            const videoInputs = devices.filter((device) => device.kind === "videoinput");
+
+            if(videoInputs.length === 0){
+                throw new Error("Keine Videoinputs gefunden!");
+            }
+            // Filter nach Cam-Inputs
+            return videoInputs;
+        } catch (error) {
+            ThrowError(`Fehler beim Abrufen der Geräte: ${error.message}`);
+        }
+    }
+
+
+    const ThrowError = (message) => {
+        console.error(message);
+        setErrorMessage(true);
+
+        // Entferne den Fehler nach 5 Sekunden
+        setTimeout(() => {
+            setErrorMessage(false);
+        }, 5000);
+    };
 
     // Modell von TM mit URL laden:
     useEffect(() => {
@@ -33,6 +78,7 @@ export default function FreeTestPage({ model = "https://teachablemachine.withgoo
             const cams = await GetCamDevices();
             setDevices(cams);
             if (cams.length > 0) setCurrentDeviceId(cams[0].deviceId);
+
         };
         fetchDevices();
     }, []);
@@ -46,10 +92,11 @@ export default function FreeTestPage({ model = "https://teachablemachine.withgoo
                 videoRef.current.srcObject = stream;
                 streamRef.current = stream;
             } catch (error) {
-                console.error("Error accessing the camera:", error);
+                ThrowError(`Fehler beim Starten der Kamera: ${error.message}`);
             }
         }
     }
+
 
     async function stopCam() {
         if (streamRef.current) {
@@ -267,13 +314,32 @@ export default function FreeTestPage({ model = "https://teachablemachine.withgoo
                         event={toggleCam}
                         text={isCameraActive ? 'Foto aufnehmen' : 'Kamera aktivieren'}
                     />
-                    <UploadButton eventClick={handleImageUpload} text={"Bild hochladen"}/>
+                    <GradientButton event={handleImageUpload} text={"Bild hochladen"}/>
+                    {devices.length > 1 ? <GradientButton
+                        event={handleSwitchCamera}
+                        text={"Kamera Wechseln"}
+                    /> : null}
                 </div>
+                <div id="ErrorContainer">
+                    {errorMessage ? (
+                        <Alert
+                            severity="error"
+                            sx={{
+                                backgroundColor: "#160b0b", // Hintergrundfarbe setzen
+                                color: "white", // Textfarbe anpassen
+                            }}
+                        >
+                            <AlertTitle>Error</AlertTitle>
+                            {errorMessage}
+                        </Alert>
+                    ): null}
+                </div>
+
             </div>
         </div>
-
     );
 }
+
 
 FreeTestPage.propTypes = {
     model: PropTypes.string,

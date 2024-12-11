@@ -25,7 +25,7 @@ function App() {
 
 
     return (
-        <Grid container columnSpacing={2} style={{ padding: '0px' }}>
+        <Grid container columnSpacing={2} style={{ padding: '0px', paddingLeft: '100px' }}>
             <Grid item xs={12} style={{ textAlign: 'left' }}>
                 <img src={LogoSrc} alt="Logo" style={{ width: "250px" }} />
             </Grid>

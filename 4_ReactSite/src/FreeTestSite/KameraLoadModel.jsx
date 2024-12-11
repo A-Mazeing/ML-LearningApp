@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
 import BarComponent from "../assets/BarCompnent.jsx";
 import PropTypes from "prop-types";
-import GradientButton from "../assets/GradientButton.jsx";
 import SelectMode from "../assets/SelectMode.jsx";
-import {Alert, AlertTitle} from "@mui/material";
+import {Alert, AlertTitle, Container} from "@mui/material";
 import * as tmImage from "@teachablemachine/image";
+import WhiteButton from "../assets/WhiteButton.jsx";
+import {useEffect, useRef, useState} from "react";
+import {Col, Row} from "react-grid-system";
+import UploadButton from "../assets/UploadButton.jsx";
+
 
 export default function FreeTestPage({ model = "" }) {
     const videoRef = useRef(null);
@@ -234,12 +237,13 @@ export default function FreeTestPage({ model = "" }) {
     const renderPredictions = () => {
         if (selectedMode === 1) {
             return predictions.map((prediction, index) => (
-                <BarComponent
-                    key={index}
-                    label={prediction.className}
-                    value={Math.round(prediction.probability * 100)}
-                    classIndex={index}
-                />
+                <div key={index} style={{ marginBottom: '5px' }}>
+                    <BarComponent
+                        label={prediction.className}
+                        value={Math.round(prediction.probability * 100)}
+                        classIndex={index}
+                    />
+                </div>
             ));
         } else if (selectedMode === 2) {
             if (predictions.length > 0) {
@@ -247,11 +251,14 @@ export default function FreeTestPage({ model = "" }) {
                     prediction.probability > max.probability ? prediction : max, predictions[0]
                 );
                 return (
-                    <BarComponent
-                        label={topPrediction.className}
-                        value={Math.round(topPrediction.probability * 100)}
-                        classIndex={0}
-                    />
+                    <div style={{ marginBottom: '5px' }}>
+                        <span style={{ fontSize: '18px', marginRight: '5px' }}>{topPrediction.className}</span>
+                        <BarComponent
+                            label={topPrediction.className}
+                            value={Math.round(topPrediction.probability * 100)}
+                            classIndex={0}
+                        />
+                    </div>
                 );
             }
         } else if (selectedMode === 3) {
@@ -266,77 +273,109 @@ export default function FreeTestPage({ model = "" }) {
     };
 
     return (
-        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px'}}>
-            {/* Vorhersage und Klassifizierungsanpassung links */}
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
-                <SelectMode
-                    items={modie}
-                    eventFunc={(mode) => setSelectedMode(mode)} // Modus auswählen
-                    style={{fontSize: '32px'}} // Schriftgröße vergrößern
-                />
-
-                {predictions.length > 0 && (
-                    <div style={{marginTop: "20px", textAlign: "left", width: "300px"}}> {/* Text linksbündig */}
-                        <h2 style={{fontSize: '28px'}}>Klassifikationen:</h2> {/* Schriftgröße erhöhen */}
-                        {renderPredictions()}
+        <Container>
+            <Row style={{ marginTop: '20px' }}>
+                {/* Left Column */}
+                <Col sm={6} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    marginLeft: '0',
+                    marginTop: '80px',
+                    justifyContent: 'space-between',
+                }}>
+                    {/* Mode selection */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <SelectMode
+                            items={modie}
+                            eventFunc={(mode) => setSelectedMode(mode)}
+                            style={{ fontSize: '32px' }}
+                        />
                     </div>
-                )}
-            </div>
 
-            {/* Kamera Canvas mit Video und Fotoaufnahme Buttons */}
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                {isCameraActive ? (
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        style={{
-                            width: '700px',
-                            height: '700px',
-                            borderRadius: '15px', // Canvas abgerundet
-                        }}
-                    />
-                ) : (
-                    <img
-                        src={photo}
-                        alt="Aufgenommenes Foto"
-                        style={{
-                            width: '700px',
-                            height: '700px',
-                            objectFit: 'cover',
-                            marginBottom: '10px',
-                            borderRadius: '15px', // Canvas abgerundet
-                        }}
-                    />
-                )}
-                <canvas ref={canvasRef} style={{display: 'none'}}/>
-                <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
-                    <GradientButton
-                        event={toggleCam}
-                        text={isCameraActive ? 'Foto aufnehmen' : 'Kamera aktivieren'}
-                    />
-                    <GradientButton event={handleImageUpload} text={"Bild hochladen"}/>
-                    {devices.length > 1 ? <GradientButton
-                        event={handleSwitchCamera}
-                        text={"Kamera Wechseln"}
-                    /> : null}
-                </div>
-                <div id="ErrorContainer">
-                    {errorMessage ? (
-                        <Alert
-                            severity="error"
-                            sx={{
-                                backgroundColor: "#160b0b", // Hintergrundfarbe setzen
-                                color: "white", // Textfarbe anpassen
-                            }}
-                        >
-                            <AlertTitle>Error</AlertTitle>
-                            {errorMessage}
-                        </Alert>
-                    ): null}
-                </div>
+                    {/* Predictions rendering */}
+                    {predictions.length > 0 && (
+                        <div style={{ marginBottom: '20px', textAlign: 'left', width: '100%' }}>
+                            {renderPredictions()}
+                        </div>
+                    )}
 
-            </div>
-        </div>
+                    {/* Take Photo Button */}
+                    <div>
+                        <WhiteButton
+                            event={toggleCam}
+                            text={isCameraActive ? 'Foto aufnehmen' : 'Kamera aktivieren'}
+                        />
+                    </div>
+                </Col>
+
+                {/* Right Column */}
+                <Col sm={6} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between' }}>
+                    {/* Upload Button */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                        <UploadButton event={handleImageUpload} text={"Bild hochladen"} />
+                    </div>
+
+                    {/* Canvas for video/image display */}
+                    <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                        {isCameraActive ? (
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                style={{
+                                    width: '600px',
+                                    height: '600px',
+                                    borderRadius: '15px',
+                                }}
+                            />
+                        ) : (
+                            <img
+                                src={photo}
+                                alt="Aufgenommenes Foto"
+                                style={{
+                                    width: '600px',
+                                    height: '600px',
+                                    maxWidth: '700px',
+                                    objectFit: 'cover',
+                                    borderRadius: '15px',
+                                }}
+                            />
+                        )}
+                        <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    </div>
+
+                    {/* Switch Camera Button */}
+                    <div>
+                        {devices.length > 1 && (
+                            <WhiteButton
+                                event={handleSwitchCamera}
+                                text={"Kamera Wechseln"}
+                            />
+                        )}
+                    </div>
+
+                    {/* Error Display */}
+                    <div id="ErrorContainer">
+                        {errorMessage && (
+                            <Alert
+                                severity="error"
+                                sx={{
+                                    backgroundColor: "#160b0b",
+                                    color: "white",
+                                }}
+                            >
+                                <AlertTitle>Error</AlertTitle>
+                                {errorMessage}
+                            </Alert>
+                        )}
+                    </div>
+                </Col>
+            </Row>
+        </Container>
     );
 }
 

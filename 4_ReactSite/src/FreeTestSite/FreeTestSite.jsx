@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
 import Kamera from "./KameraLoadModel.jsx";
+import "./FreeTestSite.css"
 
 export default function FreeTestSite() {
     const location = useLocation();

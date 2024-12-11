@@ -1,9 +1,9 @@
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, MenuItem, Select } from "@mui/material";
 import React from "react";
 import PropTypes from "prop-types";
 
 export default function SelectMode({ eventFunc, items }) {
-    const [valu, setVal] = React.useState(items.length > 0 ? items[0].value : '');
+    const [val, setVal] = React.useState(items.length > 0 ? items[0].value : '');
 
     const handleChange = (event) => {
         setVal(event.target.value);
@@ -12,33 +12,28 @@ export default function SelectMode({ eventFunc, items }) {
 
     return (
         <div>
-            <FormControl
-                sx={{
-                    m: 1,
-                    minWidth: 50, // Minimale Breite
-                    border: '2px solid #9340ff', // Umrandung
-                    borderRadius: '4px',
-                    "& .MuiInputLabel-root": {
-                        color: "white", // Label-Farbe
-                    },
-                    "& .MuiSelect-select": {
-                        color: "white", // Textfarbe des ausgewählten Werts
-                        textAlign: "left", // Text linksbündig
-                        width: "auto", // Automatische Breitenanpassung
-                        display: "inline-block", // Blockelement für dynamische Breite
-                        backgroundColor: "transparent", // Hintergrundfarbe des Selects
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#9340ff",
-                    },
-                }}
-            >
-                <InputLabel id="demo-simple-select-autowidth-label">Modus ausw&#228;hlen</InputLabel>
+            <FormControl sx={{minWidth: '300px'}}>
                 <Select
-                    value={valu}
+                    value={val}  // Wert binden, um den Zustand zu reflektieren
                     onChange={handleChange}
-                    autoWidth
-                    label="Anzeige Modus"
+                    inputProps={{
+                        name: 'Modus auswählen',
+                        id: 'uncontrolled-native',
+                    }}
+                    sx={{
+                        border: '2px solid #8948d2', // Lila Rahmen
+                        borderRadius: '10px', // Abgerundeter Rahmen
+                        color: 'white', // Weiße Schriftfarbe
+                        fontSize: '20px', // Schriftgröße 20px
+                        padding: '4px',
+                        backgroundColor: '#18142c', // Hintergrundfarbe des Selects
+                        '& .MuiSelect-icon': {
+                            color: 'white', // Weißes Dropdown-Symbol
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#8948d2', // Lila Rahmen bei Fokus
+                        }
+                    }}
                     MenuProps={{
                         PaperProps: {
                             sx: {
@@ -52,12 +47,9 @@ export default function SelectMode({ eventFunc, items }) {
                             key={index}
                             value={item.value}
                             sx={{
-                                color: "white", // Textfarbe der Menüeinträge
-                                textAlign: "left", // Text linksbündig
-                                backgroundColor: "#101728", // Hintergrundfarbe der Menüeinträge
-                                '&:hover': {
-                                    backgroundColor: "#101728", // Hover-Hintergrundfarbe
-                                },
+                                backgroundColor: '#18142c',
+                                color: 'white',
+                                textAlign: 'center',
                             }}
                         >
                             {item.label}

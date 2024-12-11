@@ -2,18 +2,28 @@ import { Button } from "@mui/material";
 import FileUploadIcon from '../assets/UploadIcon.svg';
 import PropTypes from "prop-types";
 
-export default function UploadButton({ text, eventClick }) {
+export default function UploadButton({ event }) {
     return (
         <>
-            {/* Button als Label für das versteckte Input */}
             <label htmlFor="upload-input">
                 <Button
-                    variant="contained"
                     tabIndex={-1}
-                    onClick={eventClick}
-                    startIcon={<img src={FileUploadIcon} alt="Upload" style={{ width: 20, height: 20 }} />}
+                    onClick={event}
+                    sx={{
+                        backgroundColor: "transparent",
+                        padding: 0,
+                        fontSize: "16px",
+                        height: "80px",
+                        width: "80px",
+                        boxShadow: "none",
+                        border: "none",
+                        minWidth: "auto",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
                 >
-                    {text}
+                    <img src={FileUploadIcon} alt="Upload" style={{ width: '100px', height: '100px' }} />
                 </Button>
             </label>
         </>
@@ -21,6 +31,5 @@ export default function UploadButton({ text, eventClick }) {
 }
 
 UploadButton.propTypes = {
-    text: PropTypes.string,
-    eventClick: PropTypes.func.isRequired
+    event: PropTypes.func.isRequired
 };

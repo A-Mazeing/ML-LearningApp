@@ -1,7 +1,7 @@
 import {Button} from "@mui/material";
 import PropTypes from "prop-types";
 
-const GradientButton = ({ text, width, height }) => {
+const GradientButton = ({ text, width, height, event }) => {
     return (
         <Button
             variant="contained"
@@ -16,6 +16,7 @@ const GradientButton = ({ text, width, height }) => {
                 width: width, // Dynamische Breite
                 height: height // Dynamische Höhe
             }}
+            onClick={event}
         >
             {text}
         </Button>
@@ -29,4 +30,5 @@ GradientButton.propTypes = {
     text: PropTypes.string.isRequired,
     width: PropTypes.number,
     height: PropTypes.number,
+    event: PropTypes.func.isRequired
 }

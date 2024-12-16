@@ -2,16 +2,19 @@ import {TextField} from "@mui/material";
 import PropTypes from "prop-types";
 
 
-const TextFieldLarge = ({textTextfeld, style, width, height}) => {
+const TextFieldLarge = ({textTextfeld, style, width, height, onChangeFunc}) => {
     return (
         <TextField
+            onChange={onChangeFunc}
             variant="outlined"
             label={textTextfeld}
             sx={{
                 ...style,
                 width: {width},
                 height: {height},
+                backgroundColor: 'transparent',
                 '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'transparent',
                     '& fieldset': {
                         borderColor: '#9340ff', // normal
                     },
@@ -30,6 +33,12 @@ const TextFieldLarge = ({textTextfeld, style, width, height}) => {
                 },
                 '& .MuiInputBase-input': {
                     color: 'white', // Textfarbe
+                },
+                '& input:-webkit-autofill': {
+                    WebkitBoxShadow: '0 0 0px 1000px transparent inset', // Entfernt den AutoFill-Hintergrund
+                    backgroundColor: 'transparent !important', // Sicherstellen, dass auch AutoFill transparent bleibt
+                    WebkitTextFillColor: 'white',
+                    transition: 'background-color 5000s ease-in-out 0s', // Browserkompatibilität für Hintergrund
                 },
             }}
         />

@@ -20,7 +20,7 @@ function App() {
 
     const handleButtonClick = () => {
         console.log("inputValue:", inputValue); // Debugging
-        navigate('/freeTestSite', { state: { modelUrl: inputValue } }); // Korrekt
+        navigate('/select', { state: { modelUrl: inputValue } }); // Korrekt
     };
 
 

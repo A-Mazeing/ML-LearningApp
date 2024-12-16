@@ -12,7 +12,9 @@ const TextFieldLarge = ({textTextfeld, style, width, height, onChangeFunc}) => {
                 ...style,
                 width: {width},
                 height: {height},
+                backgroundColor: 'transparent',
                 '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'transparent',
                     '& fieldset': {
                         borderColor: '#9340ff', // normal
                     },
@@ -31,6 +33,12 @@ const TextFieldLarge = ({textTextfeld, style, width, height, onChangeFunc}) => {
                 },
                 '& .MuiInputBase-input': {
                     color: 'white', // Textfarbe
+                },
+                '& input:-webkit-autofill': {
+                    WebkitBoxShadow: '0 0 0px 1000px transparent inset', // Entfernt den AutoFill-Hintergrund
+                    backgroundColor: 'transparent !important', // Sicherstellen, dass auch AutoFill transparent bleibt
+                    WebkitTextFillColor: 'white',
+                    transition: 'background-color 5000s ease-in-out 0s', // Browserkompatibilität für Hintergrund
                 },
             }}
         />

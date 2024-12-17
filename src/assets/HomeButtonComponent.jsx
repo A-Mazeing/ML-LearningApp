@@ -11,11 +11,12 @@ export default function HomeButton() {
     return (
         <div
             style={{
-                position: "fixed", // Am unteren Rand positionieren
-                bottom: "20px",
-                right: "20px",
+                position: "fixed", // Fixieren
+                bottom: "20px", // Abstand vom unteren Rand
+                left: "50%", // Position horizontal in der Mitte
+                transform: "translateX(-50%)", // Korrektur, um das Element mittig auszurichten
                 cursor: "pointer",
-                zIndex: 1000, // Über allen anderen Elementen sichtbar
+                zIndex: 1000, // Überlagert andere Elemente
             }}
             onClick={handleClick}
         >
@@ -25,8 +26,8 @@ export default function HomeButton() {
                 style={{
                     width: "60px", // Größe des Home-Icons
                     height: "60px",
-                    borderRadius: "50%", // Rundes Icon
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Schatten
+                    borderRadius: "50%", // Runde Form
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Schatten für 3D-Effekt
                 }}
             />
         </div>

@@ -126,15 +126,22 @@ export default function AutoFreeTestPage() {
         const abortController = new AbortController();
 
         try {
-            const response = await fetch(`http://localhost:4000/api/files`, { signal: abortController.signal });
+            const response = await fetch(`/api/files`);
+            console.log("Antwortstatus:", response.status);
             if (!response.ok) {
                 console.error("Serverfehler beim Abrufen der Bilddateien:", response.statusText);
                 return;
             }
-            const files = await response.json();
-            if (Array.isArray(files) && files.length > 0) {
-                setImagePaths(files.filter((file) => /\.(jpg|jpeg|png)$/i.test(file))); // Nur Bilder
+
+            try {
+                const files = await response.json();
+                if (Array.isArray(files) && files.length > 0) {
+                    setImagePaths(files.filter((file) => /\.(jpg|jpeg|png)$/i.test(file))); // Nur Bilder
+                }
+            } catch (error) {
+                console.error("Fehler beim Parsen der JSON-Antwort:", error.message); // Für Debugging
             }
+
         } catch (error) {
             if (error.name === "AbortError") {
                 console.log("Fetch wurde abgebrochen");
@@ -303,6 +310,14 @@ export default function AutoFreeTestPage() {
         loadModel();
     }, [selectedModel]); // Trigger bei Änderung von selectedModel
 
+
+    useEffect(() => {
+        if (model) {
+            console.log("Model wird geladen von:", model);
+            // Modell laden...
+        }
+    }, [model]);
+
     useEffect(() => {
         LoadAllPics();
     }, []);
@@ -319,7 +334,7 @@ export default function AutoFreeTestPage() {
 
         const fetchData = async () => {
             try {
-                const response = await fetch("http://localhost:4000/api/files");
+                const response = await fetch(`/api/files`);
                 const data = await response.json();
                 if (isMounted) setImagePaths(data);
             } catch (error) {

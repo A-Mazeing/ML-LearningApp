@@ -7,9 +7,13 @@ import WhiteButton from "../assets/WhiteButton.jsx";
 import {useEffect, useRef, useState} from "react";
 import {Col, Row} from "react-grid-system";
 import UploadButton from "../assets/UploadButton.jsx";
+import {useLocation} from "react-router-dom";
+import HomeButton from "../assets/HomeButtonComponent.jsx";
 
 
-export default function FreeTestPage({ model = "" }) {
+export default function FreeTestPage() {
+    const { state } = useLocation();
+    const modelUrl = state?.modelUrl || "";
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [photo, setPhoto] = useState(null);
@@ -22,7 +26,7 @@ export default function FreeTestPage({ model = "" }) {
     const [selectedMode, setSelectedMode] = useState(1);
     const [errorMessage, setErrorMessage] = useState(null);
 
-    async function LoadModel(modelUrl) {
+    async function LoadModel() {
         if (modelUrl) {
             try {
                 // Model Scripts laden
@@ -69,11 +73,11 @@ export default function FreeTestPage({ model = "" }) {
     // Modell von TM mit URL laden:
     useEffect(() => {
         const loadModel = async () => {
-            const loadedModel = await LoadModel(model);
+            const loadedModel = await LoadModel();
             setModelInstance(loadedModel);
         };
         loadModel();
-    }, [model]);
+    }, [modelUrl]); // Richtige Abhängigkeit
 
     // Get available camera devices
     useEffect(() => {
@@ -89,12 +93,15 @@ export default function FreeTestPage({ model = "" }) {
     async function startCam() {
         if (currentDeviceId && videoRef.current) {
             try {
+                console.log("Starte Kamera");
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { deviceId: { exact: currentDeviceId } },
                 });
                 videoRef.current.srcObject = stream;
+                console.log("Kamera erfolgreich gestartet!");
                 streamRef.current = stream;
             } catch (error) {
+                console.error("Fehler beim Starten der Kamera:", error);
                 ThrowError(`Fehler beim Starten der Kamera: ${error.message}`);
             }
         }
@@ -154,11 +161,15 @@ export default function FreeTestPage({ model = "" }) {
 
     // KameraDevice wechseln
     const handleSwitchCamera = async () => {
+        if (!devices.length) {
+            console.error("Keine Geräte gefunden");
+            return;
+        }
         const currentIndex = devices.findIndex((d) => d.deviceId === currentDeviceId);
         const nextIndex = (currentIndex + 1) % devices.length;
+        console.log(`Wechsele zu Kamera: ${devices[nextIndex].label}`);
         setCurrentDeviceId(devices[nextIndex].deviceId);
     };
-
     // Upload-Button
     const handleImageUpload = async () => {
         // Kamera deaktivieren und Live-Ansicht verlassen
@@ -375,6 +386,7 @@ export default function FreeTestPage({ model = "" }) {
                     </div>
                 </Col>
             </Row>
+            <HomeButton />
         </Container>
     );
 }

@@ -8,6 +8,7 @@ import imgSrc from '../assets/img.png';
 import TextFieldLarge from "../assets/TextFieldLarge.jsx";
 import GradientButton from "../assets/GradientButton.jsx";
 import { useNavigate } from "react-router-dom";
+import React from 'react';
 
 function App() {
     const navigate = useNavigate();

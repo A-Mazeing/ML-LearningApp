@@ -7,4 +7,5 @@ export default defineConfig({
   build: {
     outDir: "dist", // Sicherstellen, dass der Output korrekt ist
   },
+  assetsInlineLimit: 0, // Erforderlich für große statische Dateien
 });

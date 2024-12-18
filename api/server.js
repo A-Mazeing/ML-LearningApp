@@ -7,7 +7,8 @@ import rateLimit from "express-rate-limit";
 import mime from "mime";
 import { createServer } from "http";
 
-// **Express App einrichten**
+// Debug-Nachricht beim Start
+console.log("Server wird gestartet...");
 const app = express();
 app.use(cors());
 
@@ -15,66 +16,55 @@ app.use(cors());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const debug = (message) => console.log(`[DEBUG] ${message}`);
-
-// **CORS-Konfiguration**
-app.use(
-    cors({
-        origin: "*", // Erlaube alle Ursprünge (anpassen, falls nötig)
-        methods: ["GET"],
-        optionsSuccessStatus: 200,
-    })
-);
-
 // **Rate Limiting**
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 Minuten
-    max: 50,
+    max: 50, // Maximale Anfragen pro IP
     message: "Zu viele Anfragen - bitte später erneut versuchen.",
 });
 app.use(limiter);
 
-// **API-Endpunkt für das Abrufen der Bilddateien**
+// **Ordner 'Testdaten' zur Verfügung stellen**
+const directoryPath = path.resolve(process.cwd(), "Testdaten"); // Absolut basierend auf dem Arbeitsverzeichnis
+
+console.log("Bereitgestelltes Directory:", directoryPath);
+
+// Route für statische Dateien im Ordner 'Testdaten'
+app.use("/Testdaten", express.static(directoryPath));
+
+// Dynamische API, um Dateinamen aus dem Ordner abzurufen
 app.get("/api/files", (req, res) => {
-    const directory = path.join(__dirname, "../public/Testdaten");
+    try {
+        if (!fs.existsSync(directoryPath) || !fs.lstatSync(directoryPath).isDirectory()) {
+            console.error("Verzeichnis nicht gefunden:", directoryPath);
+            return res.status(404).json({ error: "Verzeichnis nicht gefunden" });
+        }
 
-    debug(`Pfad zum Verzeichnis: ${directory}`);
-
-    if (!fs.existsSync(directory) || !fs.lstatSync(directory).isDirectory()) {
-        console.error("Verzeichnis nicht gefunden:", directory);
-        return res.status(404).json({ error: "Verzeichnis nicht gefunden" });
-    }
-
-    const files = [];
-
-    const readDirRecursively = (dir) => {
-        fs.readdirSync(dir).forEach((file) => {
-            const filePath = path.join(dir, file);
-            if (fs.lstatSync(filePath).isDirectory()) {
-                readDirRecursively(filePath);
-            } else {
+        const files = fs.readdirSync(directoryPath)
+            .filter((file) => {
+                const filePath = path.join(directoryPath, file);
                 const mimeType = mime.getType(filePath);
-                if (mimeType && ["image/jpeg", "image/png"].includes(mimeType)) {
-                    const relativePath = path.relative(path.resolve(__dirname, "../public"), filePath);
-                    files.push("/" + relativePath.replace(/\\/g, "/"));
-                }
-            }
-        });
-    };
+                return mimeType && ["image/jpeg", "image/png"].includes(mimeType);
+            })
+            .map((file) => `/Testdaten/${file}`);
 
-    readDirRecursively(directory);
-    res.json(files);
+        res.status(200).json(files);
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Dateien:", error);
+        res.status(500).json({ error: "Fehler beim Abrufen der Dateien" });
+    }
 });
 
-// **Statische Dateien bereitstellen**
-app.use(express.static(path.join(__dirname, "../public")));
+// **Server lokal starten**
+if (process.env.NODE_ENV !== "production") {
+    const PORT = 3000; // Lokaler Server-Standardport
+    app.listen(PORT, () => {
+        console.log(`Server läuft lokal auf Port ${PORT}`);
+        console.log(`Testdaten unter http://localhost:${PORT}/Testdaten verfügbar`);
+    });
+}
 
-// **404-Handler**
-app.use((req, res) => {
-    res.status(404).json({ error: "Die angeforderte Ressource existiert nicht." });
-});
-
-// **Express-App für Vercel exportieren**
+// **Express-App für Vercel bereitstellen**
 export default async function handler(req, res) {
     const server = createServer(app);
     server.emit("request", req, res);

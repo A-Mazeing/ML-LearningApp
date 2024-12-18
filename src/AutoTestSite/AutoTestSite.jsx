@@ -8,7 +8,7 @@ import { Row, Col } from "react-grid-system";
 import {Container} from "@mui/material";
 import SelectMode from "../assets/SelectMode.jsx";
 import HomeButton from "../assets/HomeButtonComponent.jsx";
-
+import imageList from "../imageList.json";
 
 
 
@@ -123,34 +123,22 @@ export default function AutoFreeTestPage() {
 
     // **Bilder vom Server laden**
     async function LoadAllPics() {
-        const abortController = new AbortController();
-
         try {
-            const response = await fetch(`/api/files`);
-            console.log("Antwortstatus:", response.status);
-            if (!response.ok) {
-                console.error("Serverfehler beim Abrufen der Bilddateien:", response.statusText);
-                return;
-            }
+            // Füge die Basis-URL für die Produktion hinzu
 
-            try {
-                const files = await response.json();
-                if (Array.isArray(files) && files.length > 0) {
-                    setImagePaths(files.filter((file) => /\.(jpg|jpeg|png)$/i.test(file))); // Nur Bilder
-                }
-            } catch (error) {
-                console.error("Fehler beim Parsen der JSON-Antwort:", error.message); // Für Debugging
-            }
+            // Generiere die vollständigen Bild-URLs basierend auf der JSON-Liste
+            const files = imageList.map((file) => `/Testdaten/${file}`);
 
-        } catch (error) {
-            if (error.name === "AbortError") {
-                console.log("Fetch wurde abgebrochen");
+            // Setze die Bildpfade in den State
+            if (files.length > 0) {
+                setImagePaths(files);
+                console.log("Bilder geladen:", files);
             } else {
-                console.error("Netzwerkfehler beim Abrufen der Bilddateien:", error.message);
+                console.error("Keine Bilder gefunden in der JSON-Liste.");
             }
+        } catch (error) {
+            console.error("Fehler beim Laden der Bilder:", error.message);
         }
-
-        return () => abortController.abort(); // Cleanup-Funktion
     }
 
     //Calc Acc, Prec, Rec:
@@ -329,25 +317,6 @@ export default function AutoFreeTestPage() {
         }
     }, [imagePaths, modelInstance, Klassifizieren]);
 
-    useEffect(() => {
-        let isMounted = true; // Abbruch-Flag
-
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`/api/files`);
-                const data = await response.json();
-                if (isMounted) setImagePaths(data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false; // Cleanup-Sicherstellung
-        };
-    }, []);
 
     return (
         <Container style={{ margin: "20px", maxWidth: "90%" }} >
@@ -481,20 +450,20 @@ export default function AutoFreeTestPage() {
                                 src={imagePaths[currentImageIndex]}
                                 alt="Test Image"
                                 style={{
-                                    maxWidth: "90%", // Maximale Größe des Bildes innerhalb der Spalte
+                                    maxWidth: "90%",
                                     height: "auto",
-                                    maxHeight: "85vh", // Erhöhte maximale Höhe
-                                    objectFit: "contain", // Proportionen behalten
+                                    maxHeight: "85vh",
+                                    objectFit: "contain",
                                     borderRadius: "8px",
-                                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Schatten hinzufügen
+                                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
                                 }}
                             />
 
                             {/* Button: Nächstes Bild */}
-                            <CircleButton direction="next" onClick={handleNextImage} />
+                            <CircleButton direction="next" onClick={handleNextImage}/>
                         </div>
                     ) : (
-                        <p style={{ color: "#999", textAlign: "right" }}>Bilder werden geladen...</p>
+                        <p style={{color: "#999", textAlign: "right"}}>Bilder werden geladen...</p>
                     )}
                 </Col>
             </Row>

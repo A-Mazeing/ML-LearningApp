@@ -9,7 +9,7 @@ import {Container} from "@mui/material";
 import SelectMode from "../assets/SelectMode.jsx";
 import HomeButton from "../assets/HomeButtonComponent.jsx";
 import imageList from "../imageList.json";
-
+import modelList from "../modelList.json"; // Modell-Liste importieren
 
 
 export default function AutoFreeTestPage() {
@@ -17,7 +17,7 @@ export default function AutoFreeTestPage() {
 
     const { state } = useLocation();
     const model = state?.modelUrl || ""; // Extrahiere modelUrl, falls vorhanden
-
+    const [userModelInstance, setUserModelInstance] = useState(null); // Eigene Instanz für User-Modelle
     const imageRef = useRef(null);
     const [accuracyResults, setAccuracyResults] = useState({});
     const [predictions, setPredictions] = useState([]);
@@ -26,32 +26,88 @@ export default function AutoFreeTestPage() {
     const [imagePaths, setImagePaths] = useState([]);
     const [showBlur, setShowBlur] = useState(true);
     const [selectedModel, setSelectedModel] = useState(model); // Standard auf Eingabemodell
+    const [availableModels, setAvailableModels] = useState([]); // Verfügbare Modelle
 
     const onSelectChange = (selectedValue) => {
-        switch (selectedValue) { // Verwende den Parameter 'selectedValue', NICHT 'model'
-            case "userModel":
-                setSelectedModel(selectedValue); // Benutzerdefiniertes Modell
-                break;
-            case "biasModel1":
-                setSelectedModel("Modelle/Bias 1/"); // Bias Modell 1 Front-Löwe
-                break;
-            case "biasModel2":
-                setSelectedModel("Modelle/Bias 2/"); // Bias Modell 2 Hintergrund
-                break;
-            case "biasModel3":
-                setSelectedModel("Modelle/Bias 3/"); // Bias Modell 3 Wasser
-                break;
-            case "biasModel4":
-                setSelectedModel("Modelle/Bias 4/"); // Bias Modell 4 Wenige Kängurus
-                break;
-            default:
-                console.error("Unbekanntes Modell ausgewählt");
+        if (selectedValue === "userModel") {
+            console.log("Benutzerdefiniertes Modell ausgewählt.");
+            setSelectedModel("userModel"); // Stellen Sie sicher, dass "userModel" korrekt gesetzt ist
+
+            // Überprüfen, ob das Benutzer-Modell geladen ist
+            if (!userModelInstance) {
+                console.warn("Das Benutzer-Modell ist noch nicht geladen. Bitte Modell auswählen.");
+            } else {
+                setModelInstance(userModelInstance); // Benutzerdefinierte Instanz setzen
+            }
+        } else {
+            console.log("Neues Modell ausgewählt:", selectedValue);
+            setSelectedModel(selectedValue); // Wechsel zu einem anderen Modell
         }
     };
+    useEffect(() => {
+        const loadSelectedModel = async () => {
+            if (!selectedModel) {
+                console.warn("Kein Modell ausgewählt.");
+                return;
+            }
+
+            if (selectedModel === "userModel") {
+                console.log("Benutzerdefiniertes Modell aktiv.");
+
+                // Modellinstanz auf das Benutzer-Modell setzen
+                if (userModelInstance) {
+                    setModelInstance(userModelInstance);
+                } else {
+                    console.warn("Fehler: Benutzerdefiniertes Modell ist nicht vorhanden.");
+                    // Optional: Trigger für einen Upload oder andere Logik
+                }
+
+                return;
+            }
+
+            // Andere Modelle laden
+            try {
+                console.log("Lade Modell:", selectedModel);
+
+                const loadedModel = await LoadModel(selectedModel);
+                setModelInstance(loadedModel);
+
+                console.log("Modell erfolgreich geladen:", selectedModel);
+            } catch (error) {
+                console.error(`Fehler beim Laden des Modells (${selectedModel}):`, error.message);
+            }
+        };
+
+        loadSelectedModel();
+    }, [selectedModel, userModelInstance]); // Beachten Sie, dass `userModelInstance` hier wichtig ist
+
+    useEffect(() => {
+        if (model) {
+            console.log("Initialisiertes Modell wird geladen:", model);
+            setSelectedModel(model);
+        }
+    }, [model]);
     const handleDivClick = () => {
         setShowBlur(false); // Blur-Effekt ausschalten
         classifyAllImages(); // Berechnungen durchführen
     };
+
+    async function LoadAllModels() {
+        try {
+            // Generiere die vollständigen Modell-URLs basierend auf der JSON-Liste
+            const models = modelList.map((modelName) => `/Modelle/${modelName}/`);
+
+            // Setze die Modelle in den State
+            if (models.length > 0) {
+                setAvailableModels(models);
+                console.log("Modelle geladen:", models);
+            } else {
+                console.error("Keine Modelle in der JSON-Liste gefunden.");
+            }
+        } catch (error) {
+            console.error("Fehler beim Laden der Modelle:", error.message);
+        }
+    }
 
     // **Modell laden**
     async function LoadModel(modelUrl) {
@@ -252,6 +308,7 @@ export default function AutoFreeTestPage() {
 
         return precisionResults;
     };
+
     const CalcRecall = (confusionMatrix) => {
         const recallResults = {};
 
@@ -268,35 +325,9 @@ export default function AutoFreeTestPage() {
     };
 
 
-    //Effect-Functions:
     useEffect(() => {
-        const loadModel = async () => {
-            if (!selectedModel) {
-                console.error("Kein Modell-URL angegeben!");
-                return;
-            }
-
-            const abortController = new AbortController();
-
-            try {
-                const loadedModel = await LoadModel(selectedModel);
-                if (loadedModel) {
-                    setModelInstance(loadedModel);
-                }
-            } catch (error) {
-                if (error.name === "AbortError") {
-                    console.log("Laden des Modells wurde abgebrochen");
-                } else {
-                    console.error("Fehler beim Laden des Modells:", error.message);
-                }
-            }
-
-            return () => {
-                abortController.abort(); // Cleanup
-            };
-        };
-        loadModel();
-    }, [selectedModel]); // Trigger bei Änderung von selectedModel
+        LoadAllModels();
+    }, []);
 
 
     useEffect(() => {
@@ -406,10 +437,10 @@ export default function AutoFreeTestPage() {
                         eventFunc={onSelectChange}
                         items={[
                             { value: "userModel", label: "Eingef\u00FCgtes Modell" },
-                            { value: "biasModel1", label: "Bias Modell 1" },
-                            { value: "biasModel2", label: "Bias Modell 2" },
-                            { value: "biasModel3", label: "Bias Modell 3" },
-                            { value: "biasModel4", label: "Bias Modell 4" },
+                            ...availableModels.map((modelPath, index) => ({
+                                value: modelPath,
+                                label: `Modell ${index + 1}: ${modelPath.split("/")[2]}` // Extrahiere den Modellnamen aus dem Pfad
+                            }))
                         ]}
                     />
                     {/* Linke Spalte für Klassifikationen */}

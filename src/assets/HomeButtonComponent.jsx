@@ -26,7 +26,6 @@ export default function HomeButton() {
                 style={{
                     width: "60px", // Größe des Home-Icons
                     height: "60px",
-                    borderRadius: "50%", // Runde Form
                     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Schatten für 3D-Effekt
                 }}
             />

@@ -94,16 +94,28 @@ export default function FreeTestPage() {
         if (currentDeviceId && videoRef.current) {
             try {
                 console.log("Starte Kamera");
+
+                // Berechtigungsanfrage für Kamera
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { deviceId: { exact: currentDeviceId } },
                 });
+
+                // Setze den Stream auf das Video-Element
                 videoRef.current.srcObject = stream;
                 console.log("Kamera erfolgreich gestartet!");
+
+                // Speichere den Stream, um ihn später zu stoppen
                 streamRef.current = stream;
             } catch (error) {
                 console.error("Fehler beim Starten der Kamera:", error);
+
+                // Fehler melden, wenn keine Berechtigung erteilt wurde oder ein anderes Problem auftritt
                 ThrowError(`Fehler beim Starten der Kamera: ${error.message}`);
             }
+        } else {
+            // Falls keine Device ID (Kamera) gefunden wurde
+            console.error("Keine Gerät-ID gefunden oder Video-Element nicht verfügbar!");
+            ThrowError("Keine Gerät-ID gefunden oder Kamera ist nicht verbunden!");
         }
     }
 
@@ -116,6 +128,7 @@ export default function FreeTestPage() {
             streamRef.current = null; // Löscht den gespeicherten Stream
         }
     }
+
 
     useEffect(() => { startCam(); }, [currentDeviceId]);
 

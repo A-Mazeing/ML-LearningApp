@@ -14,18 +14,8 @@ import HomeButton from "../assets/HomeButtonComponent.jsx";
 export default function FreeTestPage() {
     const { state } = useLocation();
     const modelUrl = state?.modelUrl || "";
-    const videoRef = useRef(null);
-    const canvasRef = useRef(null);
-    const [photo, setPhoto] = useState(null);
-    const [devices, setDevices] = useState([]);
-    const [currentDeviceId, setCurrentDeviceId] = useState(null);
     const [predictions, setPredictions] = useState([]);
     const [modelInstance, setModelInstance] = useState(null);
-    const [isCameraActive, setIsCameraActive] = useState(true);
-    const streamRef = useRef(null);
-    const [selectedMode, setSelectedMode] = useState(1);
-    const [errorMessage, setErrorMessage] = useState(null);
-
     async function LoadModel() {
         if (modelUrl) {
             try {
@@ -40,36 +30,6 @@ export default function FreeTestPage() {
         }
     }
 
-
-//Funktion für Kamera-Devices -> returned alle KameraDevices
-    async function GetCamDevices() {
-        try {
-            // Get all Devices
-            const devices = await navigator.mediaDevices.enumerateDevices();
-
-            const videoInputs = devices.filter((device) => device.kind === "videoinput");
-
-            if(videoInputs.length === 0){
-                throw new Error("Keine Videoinputs gefunden!");
-            }
-            // Filter nach Cam-Inputs
-            return videoInputs;
-        } catch (error) {
-            ThrowError(`Fehler beim Abrufen der Geräte: ${error.message}`);
-        }
-    }
-
-
-    const ThrowError = (message) => {
-        console.error(message);
-        setErrorMessage(true);
-
-        // Entferne den Fehler nach 5 Sekunden
-        setTimeout(() => {
-            setErrorMessage(false);
-        }, 5000);
-    };
-
     // Modell von TM mit URL laden:
     useEffect(() => {
         const loadModel = async () => {
@@ -78,6 +38,43 @@ export default function FreeTestPage() {
         };
         loadModel();
     }, [modelUrl]); // Richtige Abhängigkeit
+
+
+
+    //Muss überarbeitet werden
+    const [errorMessage, setErrorMessage] = useState(null);
+    const ThrowError = (message) => {
+        /*console.error(message);
+        setErrorMessage(true);
+
+        // Entferne den Fehler nach 5 Sekunden
+        setTimeout(() => {
+            setErrorMessage(false);
+        }, 5000);*/
+    };
+
+
+
+    const [devices, setDevices] = useState([]);
+    const [currentDeviceId, setCurrentDeviceId] = useState(null);
+    //Funktion für Kamera-Devices -> returned alle KameraDevices
+    async function GetCamDevices() {
+        try {
+            // Get all Devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+
+            const videoInputs = devices.filter((device) => device.kind === "videoinput");
+
+            if(videoInputs.length === 0){
+                console.error("Keine Kamera gefunden");
+            }
+            // Filter nach Cam-Inputs
+            return videoInputs;
+        } catch (error) {
+            ThrowError(`Fehler beim Abrufen der Geräte: ${error.message}`);
+        }
+    }
+
 
     // Get available camera devices
     useEffect(() => {
@@ -90,36 +87,10 @@ export default function FreeTestPage() {
         fetchDevices();
     }, []);
 
-    async function startCam() {
-        if (currentDeviceId && videoRef.current) {
-            try {
-                console.log("Starte Kamera");
 
-                // Berechtigungsanfrage für Kamera
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: { exact: currentDeviceId } },
-                });
-
-                // Setze den Stream auf das Video-Element
-                videoRef.current.srcObject = stream;
-                console.log("Kamera erfolgreich gestartet!");
-
-                // Speichere den Stream, um ihn später zu stoppen
-                streamRef.current = stream;
-            } catch (error) {
-                console.error("Fehler beim Starten der Kamera:", error);
-
-                // Fehler melden, wenn keine Berechtigung erteilt wurde oder ein anderes Problem auftritt
-                ThrowError(`Fehler beim Starten der Kamera: ${error.message}`);
-            }
-        } else {
-            // Falls keine Device ID (Kamera) gefunden wurde
-            console.error("Keine Gerät-ID gefunden oder Video-Element nicht verfügbar!");
-            ThrowError("Keine Gerät-ID gefunden oder Kamera ist nicht verbunden!");
-        }
-    }
-
-
+    const streamRef = useRef(null);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
     async function stopCam() {
         if (streamRef.current) {
             const tracks = streamRef.current.getTracks();
@@ -128,9 +99,66 @@ export default function FreeTestPage() {
             streamRef.current = null; // Löscht den gespeicherten Stream
         }
     }
+    useEffect(() => {
+        const requestCameraPermission = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                console.log("Kamera-Berechtigung erteilt");
 
+                // Kamera nur starten, wenn Berechtigung erteilt wurde
+                if (stream) {
+                    const cams = await GetCamDevices();
+                    setDevices(cams);
+                    if (cams.length > 0) {
+                        setCurrentDeviceId(cams[0].deviceId);
+                    }
+                }
+            } catch (error) {
+                console.error("Kamera-Berechtigung verweigert:", error);
+            }
+        };
 
-    useEffect(() => { startCam(); }, [currentDeviceId]);
+        requestCameraPermission();
+    }, []);
+
+    const [isCameraActive, setIsCameraActive] = useState(true);
+    useEffect(() => {
+        if (currentDeviceId && isCameraActive) {
+            startCam();
+        }
+    }, [currentDeviceId, isCameraActive]);
+
+    async function startCam() {
+        try {
+            console.log("Starte Kamera");
+
+            // Berechtigungsanfrage für Kamera
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: currentDeviceId ? { exact: currentDeviceId } : undefined },
+            });
+
+            // Setze den Stream auf das Video-Element
+            videoRef.current.srcObject = stream;
+            console.log("Kamera erfolgreich gestartet!");
+
+            // Speichere den Stream, um ihn später zu stoppen
+            streamRef.current = stream;
+        } catch (error) {
+            if (error.name === "OverconstrainedError") {
+                console.error("Fehler beim Starten der Kamera: OverconstrainedError. Versuche ohne Einschränkungen.");
+                try {
+                    // Fallback: Versuche ohne Einschränkungen
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    videoRef.current.srcObject = stream;
+                    streamRef.current = stream;
+                } catch (fallbackError) {
+                    console.error("Fehler beim Starten der Kamera im Fallback:", fallbackError);
+                }
+            } else {
+                console.error("Fehler beim Starten der Kamera:", error);
+            }
+        }
+    }
 
     useEffect(() => {
         if (isCameraActive) {
@@ -138,12 +166,12 @@ export default function FreeTestPage() {
         } else {
             stopCam();
         }
-
         return () => {
             stopCam();
         };
-    }, [currentDeviceId, isCameraActive]);
+    }, [isCameraActive]);
 
+    const [photo, setPhoto] = useState(null);
     const captureLastFrame = () => {
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
@@ -258,6 +286,7 @@ export default function FreeTestPage() {
         { value: 3, label: 'Klasse' }
     ];
 
+    const [selectedMode, setSelectedMode] = useState(1);
     const renderPredictions = () => {
         if (selectedMode === 1) {
             return predictions.map((prediction, index) => (

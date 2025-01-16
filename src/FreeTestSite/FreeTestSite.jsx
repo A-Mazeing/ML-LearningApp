@@ -28,6 +28,9 @@ export default function FreeTestPage() {
             }
             return null;
         }
+        else{
+            ThrowError("Kein Modell gefunden");
+        }
     }
 
     // Modell von TM mit URL laden:
@@ -39,20 +42,27 @@ export default function FreeTestPage() {
         loadModel();
     }, [modelUrl]); // Richtige Abhängigkeit
 
-
-
-    //Muss überarbeitet werden
     const [errorMessage, setErrorMessage] = useState(null);
     const ThrowError = (message) => {
-        /*console.error(message);
-        setErrorMessage(true);
+        console.error(message);
+        setErrorMessage(message);
 
         // Entferne den Fehler nach 5 Sekunden
         setTimeout(() => {
-            setErrorMessage(false);
-        }, 5000);*/
+            setErrorMessage(null);
+        }, 5000);
     };
 
+    const [warningMessage, setWarningMessage] = useState(null);
+    const ThrowWarning = (message) => {
+        console.warn(message);
+        setWarningMessage(message);
+
+        // Entferne die Warnung nach 5 Sekunden
+        setTimeout(() => {
+            setWarningMessage(null);
+        }, 5000);
+    };
 
 
     const [devices, setDevices] = useState([]);
@@ -66,7 +76,7 @@ export default function FreeTestPage() {
             const videoInputs = devices.filter((device) => device.kind === "videoinput");
 
             if(videoInputs.length === 0){
-                console.error("Keine Kamera gefunden");
+                ThrowError(`Keine Kamera gefunden`);
             }
             // Filter nach Cam-Inputs
             return videoInputs;
@@ -103,7 +113,6 @@ export default function FreeTestPage() {
         const requestCameraPermission = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                console.log("Kamera-Berechtigung erteilt");
 
                 // Kamera nur starten, wenn Berechtigung erteilt wurde
                 if (stream) {
@@ -114,7 +123,7 @@ export default function FreeTestPage() {
                     }
                 }
             } catch (error) {
-                console.error("Kamera-Berechtigung verweigert:", error);
+                ThrowError(`Kamera-Berechtigung verweigert: ${error.message}`);
             }
         };
 
@@ -130,7 +139,6 @@ export default function FreeTestPage() {
 
     async function startCam() {
         try {
-            console.log("Starte Kamera");
 
             // Berechtigungsanfrage für Kamera
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -139,23 +147,22 @@ export default function FreeTestPage() {
 
             // Setze den Stream auf das Video-Element
             videoRef.current.srcObject = stream;
-            console.log("Kamera erfolgreich gestartet!");
 
             // Speichere den Stream, um ihn später zu stoppen
             streamRef.current = stream;
         } catch (error) {
             if (error.name === "OverconstrainedError") {
-                console.error("Fehler beim Starten der Kamera: OverconstrainedError. Versuche ohne Einschränkungen.");
                 try {
-                    // Fallback: Versuche ohne Einschränkungen
+                    // Fallback: Versuche ohne Einschränkungen ohne dieses Fallback kommt es trotzdem zu einem Error
+                    // welcher in der Altert Komponente angezeigt wird
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     videoRef.current.srcObject = stream;
                     streamRef.current = stream;
                 } catch (fallbackError) {
-                    console.error("Fehler beim Starten der Kamera im Fallback:", fallbackError);
+                    ThrowError(`Kamera-Fehler: ${fallbackError.message}`);
                 }
             } else {
-                console.error("Fehler beim Starten der Kamera:", error);
+                ThrowError(`Kamera-Fehler: ${error.message}`);
             }
         }
     }
@@ -203,12 +210,12 @@ export default function FreeTestPage() {
     // KameraDevice wechseln
     const handleSwitchCamera = async () => {
         if (!devices.length) {
-            console.error("Keine Geräte gefunden");
+            ThrowError("Keine Devices gefunden");
             return;
         }
         const currentIndex = devices.findIndex((d) => d.deviceId === currentDeviceId);
         const nextIndex = (currentIndex + 1) % devices.length;
-        console.log(`Wechsele zu Kamera: ${devices[nextIndex].label}`);
+        //console.log(`Wechsele zu Kamera: ${devices[nextIndex].label}`);
         setCurrentDeviceId(devices[nextIndex].deviceId);
     };
     // Upload-Button
@@ -410,23 +417,38 @@ export default function FreeTestPage() {
                             />
                         )}
                     </div>
-
-                    {/* Error Display */}
-                    <div id="ErrorContainer">
-                        {errorMessage && (
-                            <Alert
-                                severity="error"
-                                sx={{
-                                    backgroundColor: "#160b0b",
-                                    color: "white",
-                                }}
-                            >
-                                <AlertTitle>Error</AlertTitle>
-                                {errorMessage}
-                            </Alert>
-                        )}
-                    </div>
                 </Col>
+            </Row>
+            <Row style={{ justifyContent: 'center', width: '100%', marginBottom: '20px'}}>
+                {/* Error Display */}
+                {errorMessage && (
+                    <Alert
+                        severity="error"
+                        sx={{
+                            backgroundColor: "#160b0b",
+                            color: "white",
+                        }}
+                        onClose={() => setErrorMessage(null)}
+                    >
+                        <AlertTitle>Error</AlertTitle>
+                        {errorMessage}
+                    </Alert>
+                )}
+            </Row>
+            <Row style={{ justifyContent: 'center', width: '100%', marginBottom: '20px'  }}>
+                {warningMessage && (
+                    <Alert
+                        severity="warning"
+                        sx={{
+                            backgroundColor: "#160b0b",
+                            color: "white",
+                        }}
+                        onClose={() => setWarningMessage(null)}
+                    >
+                        <AlertTitle>Warning</AlertTitle>
+                        {warningMessage}
+                    </Alert>
+                )}
             </Row>
             <HomeButton />
         </Container>

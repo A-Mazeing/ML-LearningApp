@@ -3,4 +3,11 @@
   margin-top: 0;
   text-align: center;
 }
+.row {
+  display: flex;
+  flex-wrap: nowrap; /* Verhindert Umbruch */
+}
+.col {
+  flex: 0 0 auto; /* Stellt sicher, dass die Breite nur von Inhalten abhängt */
+}
 

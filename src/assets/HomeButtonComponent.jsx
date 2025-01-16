@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import HomeImgSrc from "./Home.png"; // Home-Button-Bild importieren
+import HomeImgSrc from "./Home.png";
+import {Row} from "react-grid-system"; // Home-Button-Bild importieren
 
 export default function HomeButton() {
     const navigate = useNavigate(); // Router für Navigation
@@ -9,12 +10,13 @@ export default function HomeButton() {
     };
 
     return (
-        <div
+        <Row
             style={{
-                position: "fixed", // Fixieren
-                bottom: "20px", // Abstand vom unteren Rand
-                left: "50%", // Position horizontal in der Mitte
-                transform: "translateX(-50%)", // Korrektur, um das Element mittig auszurichten
+                //position: "fixed", // Fixieren
+                left: "50%", // Horizontal zentrieren
+                justifyContent: "center",
+                bottom: 0,
+                marginBottom: "20px",
                 cursor: "pointer",
                 zIndex: 1000, // Überlagert andere Elemente
             }}
@@ -29,6 +31,6 @@ export default function HomeButton() {
                     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Schatten für 3D-Effekt
                 }}
             />
-        </div>
+        </Row>
     );
 }
